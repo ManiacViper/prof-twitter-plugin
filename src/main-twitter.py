@@ -8,9 +8,10 @@ ACCESS_TOKEN_SECRET = ''
 
 def _print_initial_message(client, token):
     if client and token:
-        print('Birdy api version: ' + client.api_version)
+        print('Birdy Twitter API Version: ' + client.api_version)
         print('Author: ManiacViper')
-        print('Please authenticate profanity here: ' + token['auth_url'])
+        print('Please click below to give your blessings to profanity:')
+        print(token['auth_url'])
 
 def authorize_app_for_twitter():
     global ACCESS_TOKEN
@@ -27,5 +28,14 @@ def authorize_app_for_twitter():
         ACCESS_TOKEN_SECRET = token['oauth_token_secret']
         _print_initial_message(client, token)
 
+def quit_application():
+    user_message = "Enter 'quit' to quit the program: "
+    user_entry = input(user_message)
+
+    if user_entry != 'quit':
+        quit_application()
+
 # execute the program
 authorize_app_for_twitter()
+quit_application()
+
