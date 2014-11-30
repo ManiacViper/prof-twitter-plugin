@@ -9,10 +9,10 @@ ACCESS_TOKEN_SECRET = ''
 def print_initial_message():
     global client
     if client != '':
-        print('Author: ManiacViper')
         print('Birdy api version: ' + client.api_version)
+        print('Author: ManiacViper')
 
-def authorize_twitter_app():
+def authorize_app_for_twitter():
     global client
     global ACCESS_TOKEN
     global ACCESS_TOKEN_SECRET
@@ -28,7 +28,7 @@ def authorize_twitter_app():
         ACCESS_TOKEN_SECRET = token['oauth_token_secret']
         print('Please authenticate profanity here: ' + token['auth_url'])
 
-authorize_twitter_app()
+authorize_app_for_twitter()
 print_initial_message()
 
 
