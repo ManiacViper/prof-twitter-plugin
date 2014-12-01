@@ -48,9 +48,9 @@ def _get_token_from_storage():
     except:
         print(token_file_name + ' file not found')
     else:
-        token_properties = file_object.readline()
-        access_token = token_properties[0].strip()
-        access_token_secret = token_properties[1].strip()
+        access_token = file_object.readline().strip()
+        access_token_secret = file_object.readline().strip()
+        file_object.close()
 
 def _print_initial_message():
     global client
@@ -83,7 +83,7 @@ def _save_token():
     except:
         print('Cannot create a new access token file for twitter')
     else:
-        file_object.write(access_token)
+        file_object.write(access_token + '\n')
         file_object.write(access_token_secret)
         file_object.close()
 
