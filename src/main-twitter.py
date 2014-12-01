@@ -2,15 +2,17 @@ from lib.twitter import UserClient
 from lib.twitter import TwitterClientError
 import os
 
+# app and twitter user authentication
 CONSUMER_KEY = '8JakUqhG5yA812RmumwEs0lpx'
 CONSUMER_SECRET = 'ca3P7B8gMiSvjPwD9DcQcgbDB19kIG8Sn416EZ2WeYsnGn6iaE'
+TOKEN_FILE_NAME = 'twitter_token.txt'
+
+token = ''
 access_token = ''
 access_token_secret = ''
 client = ''
-token = ''
-token_file_name = 'twitter_token.txt'
 
-# functions that profanity will register and use
+# profanity will register and use
 def authorize_app_for_twitter():
     global client
     global token
@@ -27,11 +29,11 @@ def authorize_app_for_twitter():
     else:
         _check_for_token()
 
-# functions used only by this script
+# used only by this script
 def _check_for_token():
     global access_token
     global access_token_secret
-    if os.path.isfile(token_file_name):
+    if os.path.isfile(TOKEN_FILE_NAME):
         _get_token_from_storage()
     else:
         access_token = token['oauth_token']
@@ -44,9 +46,9 @@ def _get_token_from_storage():
     global access_token_secret
 
     try:
-        file_object = open(token_file_name, 'r')
+        file_object = open(TOKEN_FILE_NAME, 'r')
     except:
-        print(token_file_name + ' file not found')
+        print(TOKEN_FILE_NAME + ' file not found')
     else:
         access_token = file_object.readline().strip()
         access_token_secret = file_object.readline().strip()
@@ -79,7 +81,7 @@ def _set_final_access_token():
 
 def _save_token():
     try:
-        file_object = open(token_file_name, 'w')
+        file_object = open(TOKEN_FILE_NAME, 'w')
     except:
         print('Cannot create a new access token file for twitter')
     else:
@@ -99,7 +101,7 @@ def _is_number(numberAsString):
     except ValueError:
         return False
 
-# functions for development without profanity - temporary
+# for development without profanity - temporary
 def _quit_application():
     quit_keyword = 'quit'
     user_message = "Enter '" + quit_keyword + "' to quit the program: "
