@@ -105,7 +105,7 @@ def _is_number(numberAsString):
 def _quit_application():
     quit_keyword = 'quit'
     user_message = "Enter '" + quit_keyword + "' to quit the program: "
-    user_entry = input(user_message)
+    user_entry = input(user_message).strip()
 
     if user_entry != quit_keyword:
         _quit_application()
