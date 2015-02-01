@@ -25,7 +25,7 @@ def authorize_app_for_twitter():
 
     try:
         client = UserClient(CONSUMER_KEY, CONSUMER_SECRET)
-        token = client.get_authorize_token()
+        token = client.get_authorize_token("oob")
     except TwitterClientError:
         print('Oops, this is embarrassing, cannot connect to twitter')
     else:
@@ -33,6 +33,7 @@ def authorize_app_for_twitter():
         stream()
 
 def stream():
+    print("Trying to stream /n")
     try:
         userFeed = client.userstream.user.get()
     except TwitterApiError as error:
@@ -86,12 +87,23 @@ def _set_final_access_token():
     global access_token_secret
 
     if _user_entered_pin_code():
-        client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
-                            access_token, access_token_secret)
-        token = client.get_access_token(OAUTH_VERIFIER)
-        access_token = token['oauth_token']
-        access_token_secret = token['oauth_token_secret']
-        _save_token()
+        try:
+            client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
+                                access_token, access_token_secret)
+            token = client.get_access_token(OAUTH_VERIFIER)
+        except TwitterApiError as e:
+            print("getting final access token error: " + e.error_code)
+        else:
+            access_token = token['oauth_token']
+            access_token_secret = token['oauth_token_secret']
+            client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
+                                access_token, access_token_secret)
+            _save_token()
+
+def _user_entered_pin_code():
+    global OAUTH_VERIFIER
+    OAUTH_VERIFIER = input('Enter the pin code here: ')
+    return _is_number(OAUTH_VERIFIER)
 
 def _save_token():
     try:
@@ -102,11 +114,6 @@ def _save_token():
         file_object.write(access_token + '\n')
         file_object.write(access_token_secret)
         file_object.close()
-
-def _user_entered_pin_code():
-    global OAUTH_VERIFIER
-    OAUTH_VERIFIER = input('Enter the pin code here: ')
-    return _is_number(OAUTH_VERIFIER)
 
 def _is_number(numberAsString):
     try:
