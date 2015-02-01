@@ -34,11 +34,12 @@ def authorize_app_for_twitter():
 
 def stream():
     try:
-        #userFeed = client.userstream.user.get() streaming api json error
+        #userFeed = client.userstream.user.get() #streaming api error, Unable to decode JSON response
         userFeed = client.api.statuses.home_timeline.get()
     except TwitterApiError as error:
-        print("Something went wrong in getting your user feed \n")
-        print("Error code for twitter api: "+ error.error_code)
+        print("Something went wrong in getting your user feed")
+        print("Please see error details below:")
+        print("Status code for twitter api: "+ str(error.status_code) + "\n")
     else:
         for eachtweet in userFeed.data:
             print(eachtweet['text'] + "\n")
