@@ -38,13 +38,10 @@ def stream():
         userFeed = client.api.statuses.home_timeline.get()
     except TwitterApiError as error:
         print("Something went wrong in getting your user feed \n")
-        print("Response headers from twitter api: "+ error.headers + "\n")
         print("Error code for twitter api: "+ error.error_code)
     else:
         for eachtweet in userFeed.data:
             print(eachtweet['text'] + "\n")
-            stream()
-
 
 # used only by this script
 def _check_for_token():
