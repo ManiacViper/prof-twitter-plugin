@@ -1,10 +1,12 @@
 from lib.twitter import UserClient
 from lib.twitter import TwitterClientError
+from lib.twitter import TwitterApiError
 import os
+import json
 
 # app and twitter user authentication
-CONSUMER_KEY = '8JakUqhG5yA812RmumwEs0lpx'
-CONSUMER_SECRET = 'ca3P7B8gMiSvjPwD9DcQcgbDB19kIG8Sn416EZ2WeYsnGn6iaE'
+CONSUMER_KEY = '4f8CCe3Y02anueEva8KdPcCUP'
+CONSUMER_SECRET = 'E7InGu7pwHfR77EIq19wsy2hbIxJjZKoIoM8VNliZKzhlMyhEU'
 TOKEN_FILE_NAME = 'twitter_token.txt'
 
 token = ''
@@ -28,6 +30,18 @@ def authorize_app_for_twitter():
         print('Oops, this is embarrassing, cannot connect to twitter')
     else:
         _check_for_token()
+        stream()
+
+def stream():
+    try:
+        userFeed = client.userstream.user.get()
+    except TwitterApiError as error:
+        print("Something went wrong in getting your user feed /n")
+        print("Response headers from twitter api: "+ error.headers + "/n")
+        print("Error code for twitter api: "+ error.error_code)
+    else:
+        print("got user stream")
+
 
 # used only by this script
 def _check_for_token():
