@@ -33,15 +33,17 @@ def authorize_app_for_twitter():
         stream()
 
 def stream():
-    print("Trying to stream /n")
     try:
-        userFeed = client.userstream.user.get()
+        #userFeed = client.userstream.user.get() streaming api json error
+        userFeed = client.api.statuses.home_timeline.get()
     except TwitterApiError as error:
-        print("Something went wrong in getting your user feed /n")
-        print("Response headers from twitter api: "+ error.headers + "/n")
+        print("Something went wrong in getting your user feed \n")
+        print("Response headers from twitter api: "+ error.headers + "\n")
         print("Error code for twitter api: "+ error.error_code)
     else:
-        print("got user stream")
+        for eachtweet in userFeed.data:
+            print(eachtweet['text'] + "\n")
+            stream()
 
 
 # used only by this script
@@ -59,6 +61,7 @@ def _check_for_token():
 def _get_token_from_storage():
     global access_token
     global access_token_secret
+    global client
 
     try:
         file_object = open(TOKEN_FILE_NAME, 'r')
@@ -68,6 +71,8 @@ def _get_token_from_storage():
         access_token = file_object.readline().strip()
         access_token_secret = file_object.readline().strip()
         file_object.close()
+        client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
+                                access_token, access_token_secret)
 
 def _print_initial_message():
     global client
