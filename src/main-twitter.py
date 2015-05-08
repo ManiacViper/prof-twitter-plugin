@@ -30,7 +30,21 @@ def authorize_app_for_twitter():
         print('Oops, this is embarrassing, cannot connect to twitter')
     else:
         _check_for_token()
-        stream()
+        tweet()
+
+
+def tweet():
+
+    userTweet = input('Type your tweet here: ')
+
+    try:
+        tweetApiResponse = client.api.statuses.update.post(status=str(userTweet))
+    except TwitterApiError as error:
+        print("Something went wrong in tweeting that")
+        print("Please see error details below:")
+        print("Status code for twitter api: "+ str(error.status_code) + "\n")
+    else:
+        print("Your tweet '" + userTweet + "' has flown away in the clouds")
 
 def stream():
     try:
