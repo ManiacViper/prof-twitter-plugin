@@ -39,7 +39,7 @@ def authorize_app_for_twitter():
 
 def tweet():
 
-    userTweet = input('Type your tweet here: ')
+    userTweet =   prof.win_create('Type your tweet here: ')
 
     try:
         tweetApiResponse = client.api.statuses.update.post(status=str(userTweet))
@@ -123,7 +123,7 @@ def _set_final_access_token():
 
 def _user_entered_pin_code():
     global OAUTH_VERIFIER
-    OAUTH_VERIFIER = input('Enter the pin code here: ')
+    OAUTH_VERIFIER =   prof.win_create('Enter the pin code here: ')
     return _is_number(OAUTH_VERIFIER)
 
 def _save_token():
@@ -147,7 +147,7 @@ def _is_number(numberAsString):
 def _quit_application():
     quit_keyword = 'quit'
     user_message = "Enter '" + quit_keyword + "' to quit the program: "
-    user_entry = input(user_message).strip()
+    user_entry =   prof.win_create(user_message)
 
     if user_entry != quit_keyword:
         _quit_application()
