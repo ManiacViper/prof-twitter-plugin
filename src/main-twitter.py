@@ -154,8 +154,12 @@ def _quit_application():
 
 #register profanity commands
 def prof_init(version, status):
-    if authorize_app_for_twitter():
         #prof.register_timed(_get_scores, 60) - for tweet feed
+        prof.register_command("/twitlogin", 0, 0,
+            "/twitlogin",
+            "Login to your twitter account",
+            "Login to your twitter account",
+            authorize_app_for_twitter)
         prof.register_command("/tweet", 0, 0,
             "/tweet",
             "Chirp what your thinking!",
@@ -164,6 +168,6 @@ def prof_init(version, status):
 
 #on home screen
 def prof_on_start():
-    if authorize_app_for_twitter():
-        prof.cons_show('you can use /tweet <your tweet> to tweet right now! Do it!')
+        prof.cons_show('use /twitlogin to link your twitter account')
+        prof.cons_show('after you link your account, use /tweet <your tweet> to tweet right now! Do it!')
 
