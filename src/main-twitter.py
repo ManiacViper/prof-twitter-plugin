@@ -6,8 +6,8 @@ import os
 import json
 
 # app and twitter user authentication
-CONSUMER_KEY = '4f8CCe3Y02anueEva8KdPcCUP'
-CONSUMER_SECRET = 'E7InGu7pwHfR77EIq19wsy2hbIxJjZKoIoM8VNliZKzhlMyhEU'
+CONSUMER_KEY = 'f9ZVaxUEphYfsuqNmnHFYEO7j'
+CONSUMER_SECRET = 'mTofVPgv6NPklp8w5lMoAWTNZaamD63XKaOKf9fNc1zf9Bpbxd'
 TOKEN_FILE_NAME = 'twitter_token.txt'
 
 token = None
