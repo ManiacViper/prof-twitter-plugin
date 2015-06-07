@@ -1,6 +1,9 @@
 # prof-twitter-plugin
 using Birdy https://github.com/inueni/birdy
 
+Python version
+works with 3.4
+
 Done
 -User and application authentication on command line
 -Tweet working on command line on command line
