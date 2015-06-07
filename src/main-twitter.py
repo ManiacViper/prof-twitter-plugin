@@ -4,6 +4,7 @@ from lib.twitter import TwitterApiError
 import prof
 import os
 import json
+from lib.twitter import StreamClient
 
 # app and twitter user authentication
 CONSUMER_KEY = 'f9ZVaxUEphYfsuqNmnHFYEO7j'
@@ -64,7 +65,7 @@ def stream():
         for eachtweet in userFeed.data:
              prof.cons_show(eachtweet['text'] + "\n")
 
-# used only by this script
+# used only by this script (authentication of app and authorization of user)
 def _check_for_token():
     global access_token
     global access_token_secret
@@ -108,6 +109,7 @@ def _print_initial_message():
 def _set_final_access_token(pin):
     global client
     global token
+    global OAUTH_VERIFIER
     global access_token
     global access_token_secret
     
