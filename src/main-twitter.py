@@ -1,8 +1,10 @@
+import os
+import json
+
 from lib.twitter import UserClient
 from lib.twitter import TwitterClientError
 from lib.twitter import TwitterApiError
-import os
-import json
+from lib.twitter import StreamClient
 
 # app and twitter user authentication
 CONSUMER_KEY = 'f9ZVaxUEphYfsuqNmnHFYEO7j'
@@ -30,7 +32,7 @@ def authorize_app_for_twitter():
         print('Oops, this is embarrassing, cannot connect to twitter')
     else:
         _check_for_token()
-        tweet()
+        stream()
 
 
 def tweet():
@@ -56,9 +58,9 @@ def stream():
         print("Status code for twitter api: "+ str(error.status_code) + "\n")
     else:
         for eachtweet in userFeed.data:
-            print(eachtweet['text'] + "\n")
+            print(eachtweet['text'])
 
-# used only by this script
+# used only by this script (authentication of app and authorization of user)
 def _check_for_token():
     global access_token
     global access_token_secret
