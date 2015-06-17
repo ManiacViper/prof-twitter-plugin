@@ -32,7 +32,7 @@ def authorize_app_for_twitter():
          prof.cons_show('Oops, this is embarrassing, cannot connect to twitter')
     else:
         _check_for_token()
-        prof.cons_show('Okay, your good to go, come ye, birds of the different feathers, we chirp together')
+        prof.cons_show('Okay, your good to go, come ye, birds of different feathers, we chirp together')
         authorized = True
     return authorized
 
@@ -95,9 +95,11 @@ def _print_initial_message():
     global token
 
     if client and token:
-         prof.cons_show('Birdy Twitter API Version: ' + client.api_version)
+         prof.cons_show('')
+         prof.cons_show('Logging into Chirpy')
+         prof.cons_show('Birdy Twitter API Version used: ' + client.api_version)
          prof.cons_show('Author: ManiacViper')
-         prof.cons_show('Please click below to give your blessings to profanity:')
+         prof.cons_show('Please click the url below to give your blessings to profanity:')
          prof.cons_show(token['auth_url'])
 
 def _set_final_access_token():
@@ -152,11 +154,19 @@ def _quit_application():
     if user_entry != quit_keyword:
         _quit_application()
 
+#command help
+def help():
+    prof.cons_show('')
+    prof.cons_show('Chirpy (twitter plugin) commands below')
+    prof.cons_show('/twit-login - begin twitter login process')
+    prof.cons_show('/twit-pin - authorise app by entering pin code (e.g /twit-pin <enter pin code generated from url>)')
+    prof.cons_show('/tweet - chirp away (e.g /tweet <your thoughts>) ')
+
 #register profanity commands
 def prof_init(version, status):
         #prof.register_timed(_get_scores, 60) - for tweet feed
-        prof.register_command("/twitlogin", 0, 0,
-            "/twitlogin",
+        prof.register_command("/twit-login", 0, 0,
+            "/twit-login",
             "Login to your twitter account",
             "Login to your twitter account",
             authorize_app_for_twitter)
@@ -165,9 +175,19 @@ def prof_init(version, status):
             "Chirp what your thinking!",
             "Chirp what your thinking!",
             tweet)
+        prof.register_command("/twit-help", 0, 0,
+            "/twit-help",
+            "List all commands for chirper",
+            "List all commands for chirper",
+            help)
 
 #on home screen
 def prof_on_start():
-        prof.cons_show('use /twitlogin to link your twitter account')
-        prof.cons_show('after you link your account, use /tweet <your tweet> to tweet right now! Do it!')
+        prof.cons_show('Hello welcome to Chirpy, the profanity twitter plugin :)')
+        prof.cons_show('Setup Chirpy with the steps below:')
+        prof.cons_show('1) Use /twit-login to start logging in, it will provide you a url')
+        prof.cons_show('2) Click on the url link provided and login with your twitter account in the browser')
+        prof.cons_show('3) Use /twit-pin to enter pin code provided by the url page in the browser')
+        prof.cons_show('4) Use /tweet <your tweet> to tweet right now from profanity!')
+        prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twit-help')
 
