@@ -36,9 +36,9 @@ def authorize_app_for_twitter():
     return authorized
 
 
-def tweet():
+def tweet(msg):
 
-    userTweet =   prof.win_create('Type your tweet here: ')
+    userTweet = msg
 
     try:
         tweetApiResponse = client.api.statuses.update.post(status=str(userTweet))
@@ -105,26 +105,40 @@ def _set_final_access_token(pin):
     global token
     global access_token
     global access_token_secret
+    
+    prof.log_debug(pin);
 
     if _user_entered_pin_code(pin):
+        prof.log_debug("User entered pin")
         try:
+            prof.log_debug("Try")
             client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
                                 access_token, access_token_secret)
+            prof.log_debug("1")
             token = client.get_access_token(OAUTH_VERIFIER)
+            prof.log_debug("2")
         except TwitterApiError as e:
-             prof.cons_show("Getting final access token error: " + e.error_code)
+            prof.log_debug("Exception")
+            prof.cons_show("Getting final access token error: " + e.error_code)
+
+        _save_token()
+        prof.log_debug("Saved token");
+        prof.cons_show(" ")
+        prof.cons_show("You have logged into twitter")
+        prof.cons_show('Come ye, birds of different feathers, we chirp together')
+        prof.log_debug("DONE")
+
     else:
+        prof.log_debug("ELSE")
+        prof.log_debug("Didn't enter ping");
         access_token = token['oauth_token']
         access_token_secret = token['oauth_token_secret']
         client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
                             access_token, access_token_secret)
-        _save_token()
-        prof.cons_show(" ")
-        prof.cons_show("You have logged into twitter")
-        prof.cons_show('Come ye, birds of different feathers, we chirp together')
 
 def _user_entered_pin_code(pincode = ""):
     global OAUTH_VERIFIER
+    prof.log_debug("Entered pin code = " + pincode)
     OAUTH_VERIFIER = pincode
     return _is_number(OAUTH_VERIFIER)
 
@@ -170,12 +184,12 @@ def prof_init(version, status):
             "Login to your twitter account",
             "Login to your twitter account",
             authorize_app_for_twitter)
-        prof.register_command("/twit-pin", 0, 0,
+        prof.register_command("/twit-pin", 1, 1,
             "/twit-pin <enter pin code generated from url>",
             "Enter your pin",
             "Enter your pin",
             _set_final_access_token)
-        prof.register_command("/tweet", 0, 0,
+        prof.register_command("/tweet", 1, 1,
             "/tweet",
             "Chirp what your thinking!",
             "Chirp what your thinking!",
