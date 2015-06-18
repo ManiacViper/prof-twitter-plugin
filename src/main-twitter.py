@@ -32,7 +32,6 @@ def authorize_app_for_twitter():
          prof.cons_show('Oops, this is embarrassing, cannot connect to twitter')
     else:
         _check_for_token()
-        prof.cons_show('Okay, your good to go, come ye, birds of different feathers, we chirp together')
         authorized = True
     return authorized
 
@@ -72,7 +71,6 @@ def _check_for_token():
         access_token = token['oauth_token']
         access_token_secret = token['oauth_token_secret']
         _print_initial_message()
-        _set_final_access_token()
 
 def _get_token_from_storage():
     global access_token
@@ -102,30 +100,32 @@ def _print_initial_message():
          prof.cons_show('Please click the url below to give your blessings to profanity:')
          prof.cons_show(token['auth_url'])
 
-def _set_final_access_token():
+def _set_final_access_token(pin):
     global client
     global token
-    global OAUTH_VERIFIER
     global access_token
     global access_token_secret
 
-    if _user_entered_pin_code():
+    if _user_entered_pin_code(pin):
         try:
             client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
                                 access_token, access_token_secret)
             token = client.get_access_token(OAUTH_VERIFIER)
         except TwitterApiError as e:
              prof.cons_show("Getting final access token error: " + e.error_code)
-        else:
-            access_token = token['oauth_token']
-            access_token_secret = token['oauth_token_secret']
-            client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
-                                access_token, access_token_secret)
-            _save_token()
+    else:
+        access_token = token['oauth_token']
+        access_token_secret = token['oauth_token_secret']
+        client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
+                            access_token, access_token_secret)
+        _save_token()
+        prof.cons_show(" ")
+        prof.cons_show("You have logged into twitter")
+        prof.cons_show('Come ye, birds of different feathers, we chirp together')
 
-def _user_entered_pin_code():
+def _user_entered_pin_code(pincode = ""):
     global OAUTH_VERIFIER
-    OAUTH_VERIFIER =   prof.win_create('Enter the pin code here: ')
+    OAUTH_VERIFIER = pincode
     return _is_number(OAUTH_VERIFIER)
 
 def _save_token():
@@ -154,7 +154,7 @@ def _quit_application():
     if user_entry != quit_keyword:
         _quit_application()
 
-#command help
+# help command
 def help():
     prof.cons_show('')
     prof.cons_show('Chirpy (twitter plugin) commands below')
@@ -162,14 +162,19 @@ def help():
     prof.cons_show('/twit-pin - authorise app by entering pin code (e.g /twit-pin <enter pin code generated from url>)')
     prof.cons_show('/tweet - chirp away (e.g /tweet <your thoughts>) ')
 
-#register profanity commands
+# register profanity commands
 def prof_init(version, status):
-        #prof.register_timed(_get_scores, 60) - for tweet feed
+        # prof.register_timed(_get_scores, 60) - for tweet feed
         prof.register_command("/twit-login", 0, 0,
             "/twit-login",
             "Login to your twitter account",
             "Login to your twitter account",
             authorize_app_for_twitter)
+        prof.register_command("/twit-pin", 0, 0,
+            "/twit-pin <enter pin code generated from url>",
+            "Enter your pin",
+            "Enter your pin",
+            _set_final_access_token)
         prof.register_command("/tweet", 0, 0,
             "/tweet",
             "Chirp what your thinking!",
