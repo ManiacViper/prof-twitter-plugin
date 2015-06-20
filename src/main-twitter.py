@@ -29,7 +29,7 @@ def authorize_app_for_twitter():
         client = UserClient(CONSUMER_KEY, CONSUMER_SECRET)
         token = client.get_authorize_token("oob")
     except TwitterClientError:
-         prof.cons_show('Oops, this is embarrassing, cannot connect to twitter')
+         prof.cons_show('Oops, this is embarrassing, cannot connect to twitter, could be your internet connection')
     else:
         _check_for_token()
         authorized = True
@@ -43,11 +43,13 @@ def tweet(msg):
     try:
         tweetApiResponse = client.api.statuses.update.post(status=str(userTweet))
     except TwitterApiError as error:
+         prof.cons_show(" ")
          prof.cons_show("Something went wrong in tweeting that")
          prof.cons_show("Please see error details below:")
          prof.cons_show("Status code for twitter api: "+ str(error.status_code) + "\n")
     else:
-         prof.cons_show("Your tweet '" + userTweet + "' has flown away in the clouds")
+         prof.cons_show(" ")
+         prof.cons_show("Your tweet '" + userTweet + "' flew away")
 
 def stream():
     try:
@@ -66,6 +68,8 @@ def _check_for_token():
     global access_token
     global access_token_secret
     if os.path.isfile(TOKEN_FILE_NAME):
+        prof.log_debug("Token file path is " + os.path.realpath(TOKEN_FILE_NAME))
+        prof.cons_show("You are logged in, pin is not required")
         _get_token_from_storage()
     else:
         access_token = token['oauth_token']
@@ -80,7 +84,7 @@ def _get_token_from_storage():
     try:
         file_object = open(TOKEN_FILE_NAME, 'r')
     except:
-         prof.cons_show(TOKEN_FILE_NAME + ' file not found')
+        prof.cons_show(TOKEN_FILE_NAME + ' file not found')
     else:
         access_token = file_object.readline().strip()
         access_token_secret = file_object.readline().strip()
@@ -106,7 +110,7 @@ def _set_final_access_token(pin):
     global access_token
     global access_token_secret
     
-    prof.log_debug(pin);
+    prof.log_debug(pin)
 
     if _user_entered_pin_code(pin):
         prof.log_debug("User entered pin")
@@ -114,27 +118,23 @@ def _set_final_access_token(pin):
             prof.log_debug("Try")
             client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
                                 access_token, access_token_secret)
-            prof.log_debug("1")
             token = client.get_access_token(OAUTH_VERIFIER)
-            prof.log_debug("2")
         except TwitterApiError as e:
             prof.log_debug("Exception")
             prof.cons_show("Getting final access token error: " + e.error_code)
-
-        _save_token()
-        prof.log_debug("Saved token");
-        prof.cons_show(" ")
-        prof.cons_show("You have logged into twitter")
-        prof.cons_show('Come ye, birds of different feathers, we chirp together')
-        prof.log_debug("DONE")
-
-    else:
-        prof.log_debug("ELSE")
-        prof.log_debug("Didn't enter ping");
-        access_token = token['oauth_token']
-        access_token_secret = token['oauth_token_secret']
-        client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
+        else:
+            prof.log_debug("ELSE")
+            prof.log_debug("Didn't enter ping")
+            access_token = token['oauth_token']
+            access_token_secret = token['oauth_token_secret']
+            client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
                             access_token, access_token_secret)
+            _save_token()
+            prof.log_debug("Saved token")
+            prof.cons_show(" ")
+            prof.cons_show("You have logged into twitter")
+            prof.cons_show('Come ye, birds of different feathers, we chirp together')
+            prof.log_debug("Authentication done")
 
 def _user_entered_pin_code(pincode = ""):
     global OAUTH_VERIFIER
