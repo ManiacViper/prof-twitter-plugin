@@ -10,10 +10,10 @@ CONSUMER_KEY = '4f8CCe3Y02anueEva8KdPcCUP'
 CONSUMER_SECRET = 'E7InGu7pwHfR77EIq19wsy2hbIxJjZKoIoM8VNliZKzhlMyhEU'
 TOKEN_FILE_NAME = 'twitter_token.txt'
 
-token = ''
+token = None
 access_token = ''
 access_token_secret = ''
-client = ''
+client = None
 
 # profanity will register and use
 def authorize_app_for_twitter():
@@ -41,12 +41,13 @@ def tweet(msg):
     userTweet = msg
 
     try:
-        tweetApiResponse = client.api.statuses.update.post(status=str(userTweet))
+        if authorize_app_for_twitter():
+            tweetApiResponse = client.api.statuses.update.post(status=str(userTweet))
     except TwitterApiError as error:
          prof.cons_show(" ")
          prof.cons_show("Something went wrong in tweeting that")
          prof.cons_show("Please see error details below:")
-         prof.cons_show("Status code for twitter api: "+ str(error.status_code) + "\n")
+         prof.cons_show("Status code for twitter api: " + str(error.status_code) + "\n")
     else:
          prof.cons_show(" ")
          prof.cons_show("Your tweet '" + userTweet + "' flew away")
@@ -58,7 +59,7 @@ def stream():
     except TwitterApiError as error:
          prof.cons_show("Something went wrong in getting your user feed")
          prof.cons_show("Please see error details below:")
-         prof.cons_show("Status code for twitter api: "+ str(error.status_code) + "\n")
+         prof.cons_show("Status code for twitter api: " + str(error.status_code) + "\n")
     else:
         for eachtweet in userFeed.data:
              prof.cons_show(eachtweet['text'] + "\n")
@@ -84,7 +85,7 @@ def _get_token_from_storage():
     try:
         file_object = open(TOKEN_FILE_NAME, 'r')
     except:
-        prof.cons_show(TOKEN_FILE_NAME + ' file not found')
+        prof.log_debug(TOKEN_FILE_NAME + ' file not found')
     else:
         access_token = file_object.readline().strip()
         access_token_secret = file_object.readline().strip()
@@ -203,7 +204,7 @@ def prof_init(version, status):
 #on home screen
 def prof_on_start():
         prof.cons_show('Hello welcome to Chirpy, the profanity twitter plugin :)')
-        prof.cons_show('Setup Chirpy with the steps below:')
+        prof.cons_show('Setup Chirpy with the steps below (For new users only)')
         prof.cons_show('1) Use /twit-login to start logging in, it will provide you a url')
         prof.cons_show('2) Click on the url link provided and login with your twitter account in the browser')
         prof.cons_show('3) Use /twit-pin to enter pin code provided by the url page in the browser')
