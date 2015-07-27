@@ -11,4 +11,3 @@ mkdir -p ~/.local/share/profanity/plugins/lib
 cp -r lib/*.py ~/.local/share/profanity/plugins/lib/
 cp -r src/*.py ~/.local/share/profanity/plugins/
 ls -R ~/.local/share/profanity/plugins/
-

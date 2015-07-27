@@ -191,7 +191,7 @@ def prof_init(version, status):
             "Enter your pin",
             _set_final_access_token)
         prof.register_command("/tweet", 1, 1,
-            "/tweet <your tweet>",
+            "/tweet \"<your tweet>\"",
             "Chirp what your thinking!",
             "Chirp what your thinking!",
             tweet)
@@ -210,4 +210,3 @@ def prof_on_start():
         prof.cons_show('3) Use /twi-pin to enter pin code provided by the url page in the browser')
         prof.cons_show('4) Use /tweet <your tweet> to tweet right now from profanity!')
         prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twi-help')
-
