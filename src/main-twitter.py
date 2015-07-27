@@ -175,7 +175,7 @@ def help():
     prof.cons_show('Chirpy (twitter plugin) commands below')
     prof.cons_show('/twi-login - begin twitter login process')
     prof.cons_show('/twi-pin - authorise app by entering pin code (e.g /twi-pin <enter pin code generated from url>)')
-    prof.cons_show('/tweet - chirp away (e.g /tweet <your thoughts>) ')
+    prof.cons_show('/tweet - chirp away (e.g /tweet "<your tweet>") ')
 
 # register profanity commands
 def prof_init(version, status):
@@ -208,5 +208,5 @@ def prof_on_start():
         prof.cons_show('1) Use /twi-login to start logging in, it will provide you a url')
         prof.cons_show('2) Click on the url link provided and login with your twitter account in the browser')
         prof.cons_show('3) Use /twi-pin to enter pin code provided by the url page in the browser')
-        prof.cons_show('4) Use /tweet <your tweet> to tweet right now from profanity!')
+        prof.cons_show('4) Use /tweet "<your tweet>" to tweet right now from profanity!')
         prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twi-help')
