@@ -208,5 +208,6 @@ def prof_on_start():
         prof.cons_show('1) Use /twi-login to start logging in, it will provide you a url')
         prof.cons_show('2) Click on the url link provided and login with your twitter account in the browser')
         prof.cons_show('3) Use /twi-pin to enter pin code provided by the url page in the browser')
+        prof.cons_show('NOTE: you only need to step 1, 2 and 3 once, after which once you start profanity, you can tweet straight away')
         prof.cons_show('4) Use /tweet "<your tweet>" to tweet right now from profanity!')
         prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twi-help')
