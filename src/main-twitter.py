@@ -181,24 +181,28 @@ def help():
 def prof_init(version, status):
         # prof.register_timed(_get_scores, 60) - for tweet feed
         prof.register_command("/twi-login", 0, 0,
-            "/twi-login",
+            [ "twi-login" ],
             "Login to your twitter account",
-            "Login to your twitter account",
+            [],
+            [],
             authorize_app_for_twitter)
         prof.register_command("/twi-pin", 1, 1,
-            "/twi-pin <enter pin code generated from url>",
+            [ "/twi-pin <enter pin code generated from url>" ],
             "Enter your pin",
-            "Enter your pin",
+            [],
+            [],
             _set_final_access_token)
         prof.register_command("/tweet", 1, 1,
-            "/tweet \"<your tweet>\"",
+            [ "/tweet \"<your tweet>\"" ],
             "Chirp what your thinking!",
-            "Chirp what your thinking!",
+            [],
+            [],
             tweet)
         prof.register_command("/twi-help", 0, 0,
-            "/twi-help",
+            [ "/twi-help" ],
             "List all commands for chirpy",
-            "List all commands for chirpy",
+            [],
+            [],
             help)
 
 #on home screen
