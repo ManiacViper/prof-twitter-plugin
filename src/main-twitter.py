@@ -189,11 +189,17 @@ def prof_start_message():
         prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twi-help')
 
 # register profanity commands
-def prof_init(version, status):
+def prof_init(version, status, account_name, fulljid):
     prof.register_command("/twi-login", 0, 0, ["/twi-login"], "Login to your twitter account", [], [], authorize_app_for_twitter)
-    prof.register_command("/twi-pin", 1, 1, ["/twi-pin"], "Login to your twitter account", ["enter pin code generated from url"], [], _set_final_access_token)
-    prof.register_command("/tweet", 1, 1, ["/tweet"], "Chirp what your thinking!", ["your tweet"], [], tweet)
+    prof.register_command("/twi-pin",
+                          1, 1,
+                          ["/twi-pin"],
+                          "Login to your twitter account",
+                          [["/twi-pin ", "enter pin code generated from url"]],
+                          [],
+                          _set_final_access_token)
+    prof.register_command("/tweet", 1, 1, ["/tweet"], "Chirp what your thinking!", [["/tweet", "your tweet"]], [], tweet)
     prof.register_command("/twi-help", 0, 0, ["/twi-help"], "List all commands for chirpy", [], [], help)
-    # prof.completer_add("/twi-pin", [ "<enter pin code generated from the webpage of the url>" ])
-    # prof.completer_add("/tweet", [ "<your tweet here>" ])
+    prof.completer_add("/twi-pin", [ "<enter pin code generated from the webpage of the url>" ])
+    prof.completer_add("/tweet", [ "<your tweet here>" ])
     prof_start_message()
