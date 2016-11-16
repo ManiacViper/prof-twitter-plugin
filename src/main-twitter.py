@@ -10,14 +10,21 @@ from lib.twitter import StreamClient
 CONSUMER_KEY = 'f9ZVaxUEphYfsuqNmnHFYEO7j'
 CONSUMER_SECRET = 'mTofVPgv6NPklp8w5lMoAWTNZaamD63XKaOKf9fNc1zf9Bpbxd'
 TOKEN_FILE_NAME = 'twitter_token.txt'
+PLUGIN_WINDOW_NAME= 'Twi - Twitter plugin'
 
 token = None
 access_token = ''
 access_token_secret = ''
 client = None
+streamClient = None
+tracked_statuses = []
 
 # profanity will register and use
-def authorize_app_for_twitter():
+def authorize_app_by_user():
+    authorize_app_for_client()
+    authorize_app_for_stream_client()
+
+def authorize_app_for_client():
     global client
     global token
     global access_token
@@ -36,13 +43,25 @@ def authorize_app_for_twitter():
         authorized = True
     return authorized
 
+def authorize_app_for_stream_client():
+    global streamClient
+    stream_authorized = False
+
+    try:
+        streamClient = StreamClient(CONSUMER_KEY, CONSUMER_SECRET, access_token, access_token_secret)
+    except TwitterClientError:
+         prof.cons_show('Oops, this is embarrassing, something went wrong, will not be able to show your feed')
+    else:
+        _check_for_token()
+        stream_authorized = True
+    return stream_authorized
 
 def tweet(msg):
 
     userTweet = msg
 
     try:
-        if authorize_app_for_twitter():
+        if authorize_app_for_client():
             tweetApiResponse = client.api.statuses.update.post(status=str(userTweet))
     except TwitterApiError as error:
          prof.cons_show(" ")
@@ -55,15 +74,28 @@ def tweet(msg):
 
 def stream():
     try:
-        #userFeed = client.userstream.user.get() #streaming api error, Unable to decode JSON response
-        userFeed = client.api.statuses.home_timeline.get()
+        if (_check_for_token() and streamClient is not None):
+            userFeed = streamClient.stream.statuses.filter.post(track=str(",".join(tracked_statuses)))
+        else:
+            prof.cons_show('cannot display feed, please authorize the plugin')
     except TwitterApiError as error:
          prof.cons_show("Something went wrong in getting your user feed")
          prof.cons_show("Please see error details below:")
          prof.cons_show("Status code for twitter api: " + str(error.status_code) + "\n")
     else:
-        for eachtweet in userFeed.data:
-             prof.cons_show(eachtweet['text'] + "\n")
+        for data in userFeed.stream():
+            prof.cons_show('Kenneth here ------')
+            prof.cons_show(str(dir(data)))
+            prof.cons_show('Kenneth here ------')
+
+def display_feed_in_new_window():
+        prof.win_create(PLUGIN_WINDOW_NAME, stream)
+
+def set_tracked_statuses(status = ''):
+    global tracked_statuses
+    tracked_statuses.append(status)
+    prof.cons_show("Your feed's tracked keywords")
+    prof.cons_show('[%s]' % ', '.join(map(str, tracked_statuses)))
 
 # used only by this script (authentication of app and authorization of user)
 def _check_for_token():
@@ -192,7 +224,7 @@ def prof_start_message():
 
 # register profanity commands
 def prof_init(version, status, account_name, fulljid):
-    prof.register_command("/twi-login", 0, 0, ["/twi-login"], "Login to your twitter account", [], [], authorize_app_for_twitter)
+    prof.register_command("/twi-login", 0, 0, ["/twi-login"], "Login to your twitter account", [], [], authorize_app_by_user)
     prof.register_command("/twi-pin",
                           1, 1,
                           ["/twi-pin"],
@@ -200,8 +232,17 @@ def prof_init(version, status, account_name, fulljid):
                           [["/twi-pin ", "enter pin code generated from url"]],
                           [],
                           _set_final_access_token)
+    prof.register_command("/twi-track-status",
+                      1, 1,
+                      ["/twi-track-status"],
+                      "Add one at a time what keywords you want to track (you can add up to 400 words to track!)",
+                      [["/twi-pin ", "tell me which words you are interested in today"]],
+                      [],
+                      set_tracked_statuses)
+    prof.register_timed(display_feed_in_new_window, 10)
     prof.register_command("/tweet", 1, 1, ["/tweet"], "Chirp what your thinking!", [["/tweet", "your tweet"]], [], tweet)
     prof.register_command("/twi-help", 0, 0, ["/twi-help"], "List all commands for chirpy", [], [], help)
     prof.completer_add("/twi-pin", [ "<enter pin code generated from the webpage of the url>" ])
     prof.completer_add("/tweet", [ "<your tweet here>" ])
+    prof.completer_add("/twi-track-status", [ "<enter the keyword to track here>" ])
     prof_start_message()
