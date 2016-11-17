@@ -9,7 +9,7 @@ from lib.twitter import StreamClient
 # app and twitter user authentication
 CONSUMER_KEY = 'f9ZVaxUEphYfsuqNmnHFYEO7j'
 CONSUMER_SECRET = 'mTofVPgv6NPklp8w5lMoAWTNZaamD63XKaOKf9fNc1zf9Bpbxd'
-TOKEN_FILE_NAME = 'twitter_token.txt'
+TOKEN_FILE_NAME = '.twi_twitter_token'
 PLUGIN_WINDOW_NAME= 'Twi - Twitter plugin'
 
 token = None
@@ -72,24 +72,28 @@ def tweet(msg):
          prof.cons_show(" ")
          prof.cons_show("Your tweet '" + userTweet + "' flew away")
 
-def stream():
+def _stream():
     try:
-        if (_check_for_token() and streamClient is not None):
+        if (_check_for_token() and streamClient <> None):
+            prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - before user feed")
             userFeed = streamClient.stream.statuses.filter.post(track=str(",".join(tracked_statuses)))
         else:
-            prof.cons_show('cannot display feed, please authorize the plugin')
+            prof.win_show(PLUGIN_WINDOW_NAME, 'cannot display feed, please authorize the plugin')
     except TwitterApiError as error:
-         prof.cons_show("Something went wrong in getting your user feed")
-         prof.cons_show("Please see error details below:")
-         prof.cons_show("Status code for twitter api: " + str(error.status_code) + "\n")
+         prof.win_show(PLUGIN_WINDOW_NAME, "Something went wrong in getting your user feed")
+         prof.win_show(PLUGIN_WINDOW_NAME, "Please see error details below:")
+         prof.win_show(PLUGIN_WINDOW_NAME, "Status code for twitter api: " + str(error.status_code) + "\n")
     else:
+        prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - displaying user feed")
         for data in userFeed.stream():
-            prof.cons_show('Kenneth here ------')
-            prof.cons_show(str(dir(data)))
-            prof.cons_show('Kenneth here ------')
+            prof.win_show(PLUGIN_WINDOW_NAME, str(dir(data)))
+            prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - item in stream")
 
 def display_feed_in_new_window():
-        prof.win_create(PLUGIN_WINDOW_NAME, stream)
+    if prof.win_exists(PLUGIN_WINDOW_NAME):
+       _stream()
+    else:
+        prof.win_create(PLUGIN_WINDOW_NAME, _stream)
 
 def set_tracked_statuses(status = ''):
     global tracked_statuses
