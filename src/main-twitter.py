@@ -4,6 +4,7 @@ from lib.twitter import TwitterApiError
 import prof
 import os
 import json
+import pprint
 from lib.twitter import StreamClient
 
 # app and twitter user authentication
@@ -70,9 +71,10 @@ def tweet(msg):
          prof.cons_show(" ")
          prof.cons_show("Your tweet '" + msg + "' flew away")
 
-def _stream():
+def _feed():
     user_feed = None
     try:
+        _check_for_token()
         prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - before user feed")
         if not tracked_statuses:
             user_feed = streamClient.userstream.user.get()
@@ -88,17 +90,18 @@ def _stream():
          prof.win_show(PLUGIN_WINDOW_NAME, "Resource url called from twitter api: " + str(error.resource_url) + "\n")
     else:
         prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - displaying user feed")
-        # prof.win_show(PLUGIN_WINDOW_NAME, str(type(user_feed.stream())) )
-        for data in user_feed.stream():
-            prof.win_show(PLUGIN_WINDOW_NAME, str(data['text']))
-            prof.log_debug("Kenneth - " + str(data['text']))
-        #     prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - item in stream")
+        if user_feed:
+            # status = user_feed.stream()
+            # prof.win_show(PLUGIN_WINDOW_NAME, 'in user feed - ' + str(next(status)))
+            prof.win_show(PLUGIN_WINDOW_NAME, 'in user feed - ' + str(dir(user_feed.stream())))
+        else:
+            prof.win_show(PLUGIN_WINDOW_NAME, "user feed is empty")
 
 def display_feed_in_new_window():
     if prof.win_exists(PLUGIN_WINDOW_NAME):
-       _stream()
+       _feed()
     else:
-        prof.win_create(PLUGIN_WINDOW_NAME, _stream)
+        prof.win_create(PLUGIN_WINDOW_NAME, lambda x: x+x)
 
 def set_tracked_statuses(status = ''):
     global tracked_statuses
@@ -121,7 +124,6 @@ def _check_for_token():
         prof.log_debug(access_token_secret)
         prof.log_debug("Token isn't saved as file")
         _print_initial_message()
-    return True
 
 def _get_token_from_storage():
     global access_token
@@ -143,7 +145,6 @@ def _get_token_from_storage():
                                     access_token, access_token_secret)
 
 def _print_initial_message():
-
     if client is not None and token is not None:
          prof.cons_show('')
          prof.cons_show('Logging into Chirpy')
@@ -262,10 +263,16 @@ def prof_init(version, status, account_name, fulljid):
                       [["/twi-pin ", "tell me which words you are interested in today"]],
                       [],
                       set_tracked_statuses)
-    prof.register_timed(display_feed_in_new_window, 10)
+    # prof.register_timed(display_feed_in_new_window, 10)
+    prof.register_command("/twi-feed", 0, 0,
+                          ["/twi-feed"],
+                          "display user feed",
+                          [], [],
+                          display_feed_in_new_window)
     prof.register_command("/tweet", 1, 1, ["/tweet"], "Chirp what your thinking!", [["/tweet", "your tweet"]], [], tweet)
     prof.register_command("/twi-help", 0, 0, ["/twi-help"], "List all commands for chirpy", [], [], help)
     prof.completer_add("/twi-pin", [ "<enter pin code generated from the webpage of the url>" ])
     prof.completer_add("/tweet", [ "<your tweet here>" ])
+    prof.completer_add("/twi-track-status", [ "<enter the keyword to track here>" ])
     prof.completer_add("/twi-track-status", [ "<enter the keyword to track here>" ])
     prof_start_message()
