@@ -18,13 +18,14 @@ access_token_secret = ''
 client = None
 streamClient = None
 tracked_statuses = []
+OAUTH_VERIFIER = None
 
 # profanity will register and use
 def authorize_app_by_user():
-    authorize_app_for_client()
-    authorize_app_for_stream_client()
+    _authorize_app_for_client()
+    # _authorize_app_for_stream_client()
 
-def authorize_app_for_client():
+def _authorize_app_for_client():
     global client
     global token
     global access_token
@@ -43,7 +44,7 @@ def authorize_app_for_client():
         authorized = True
     return authorized
 
-def authorize_app_for_stream_client():
+def _authorize_app_for_stream_client():
     global streamClient
     stream_authorized = False
 
@@ -57,12 +58,9 @@ def authorize_app_for_stream_client():
     return stream_authorized
 
 def tweet(msg):
-
-    userTweet = msg
-
     try:
-        if authorize_app_for_client():
-            tweetApiResponse = client.api.statuses.update.post(status=str(userTweet))
+        if _authorize_app_for_client() and msg:
+            client.api.statuses.update.post(status=str(msg))
     except TwitterApiError as error:
          prof.cons_show(" ")
          prof.cons_show("Something went wrong in tweeting that")
@@ -70,24 +68,31 @@ def tweet(msg):
          prof.cons_show("Status code for twitter api: " + str(error.status_code) + "\n")
     else:
          prof.cons_show(" ")
-         prof.cons_show("Your tweet '" + userTweet + "' flew away")
+         prof.cons_show("Your tweet '" + msg + "' flew away")
 
 def _stream():
+    user_feed = None
     try:
-        if (_check_for_token() and streamClient <> None):
-            prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - before user feed")
-            userFeed = streamClient.stream.statuses.filter.post(track=str(",".join(tracked_statuses)))
+        prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - before user feed")
+        if not tracked_statuses:
+            user_feed = streamClient.userstream.user.get()
+            prof.log_debug("Kenneth - normal user stream " + str(type(user_feed)))
         else:
-            prof.win_show(PLUGIN_WINDOW_NAME, 'cannot display feed, please authorize the plugin')
+            user_feed = streamClient.stream.statuses.filter.post(track=",".join(tracked_statuses))
+            prof.log_debug("Kenneth - filtered user stream " + str(type(user_feed)))
     except TwitterApiError as error:
-         prof.win_show(PLUGIN_WINDOW_NAME, "Something went wrong in getting your user feed")
-         prof.win_show(PLUGIN_WINDOW_NAME, "Please see error details below:")
-         prof.win_show(PLUGIN_WINDOW_NAME, "Status code for twitter api: " + str(error.status_code) + "\n")
+         prof.win_show(PLUGIN_WINDOW_NAME, "Something went wrong, getting your feed")
+         prof.win_show(PLUGIN_WINDOW_NAME, "Please see error details below: ")
+         prof.win_show(PLUGIN_WINDOW_NAME, "Status code from twitter api: " + str(error.status_code) + "\n")
+         prof.win_show(PLUGIN_WINDOW_NAME, "Error code from twitter api: " + str(error.error_code) + "\n")
+         prof.win_show(PLUGIN_WINDOW_NAME, "Resource url called from twitter api: " + str(error.resource_url) + "\n")
     else:
         prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - displaying user feed")
-        for data in userFeed.stream():
-            prof.win_show(PLUGIN_WINDOW_NAME, str(dir(data)))
-            prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - item in stream")
+        # prof.win_show(PLUGIN_WINDOW_NAME, str(type(user_feed.stream())) )
+        for data in user_feed.stream():
+            prof.win_show(PLUGIN_WINDOW_NAME, str(data['text']))
+            prof.log_debug("Kenneth - " + str(data['text']))
+        #     prof.win_show(PLUGIN_WINDOW_NAME, "Kenneth - item in stream")
 
 def display_feed_in_new_window():
     if prof.win_exists(PLUGIN_WINDOW_NAME):
@@ -98,7 +103,7 @@ def display_feed_in_new_window():
 def set_tracked_statuses(status = ''):
     global tracked_statuses
     tracked_statuses.append(status)
-    prof.cons_show("Your feed's tracked keywords")
+    prof.cons_show("Your feed's tracked keywords or phrases are below")
     prof.cons_show('[%s]' % ', '.join(map(str, tracked_statuses)))
 
 # used only by this script (authentication of app and authorization of user)
@@ -112,12 +117,17 @@ def _check_for_token():
     else:
         access_token = token['oauth_token']
         access_token_secret = token['oauth_token_secret']
+        prof.log_debug(access_token)
+        prof.log_debug(access_token_secret)
+        prof.log_debug("Token isn't saved as file")
         _print_initial_message()
+    return True
 
 def _get_token_from_storage():
     global access_token
     global access_token_secret
     global client
+    global streamClient
 
     try:
         file_object = open(TOKEN_FILE_NAME, 'r')
@@ -128,13 +138,13 @@ def _get_token_from_storage():
         access_token_secret = file_object.readline().strip()
         file_object.close()
         client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
-                                access_token, access_token_secret)
+                                    access_token, access_token_secret)
+        streamClient = StreamClient(CONSUMER_KEY, CONSUMER_SECRET,
+                                    access_token, access_token_secret)
 
 def _print_initial_message():
-    global client
-    global token
 
-    if client and token:
+    if client is not None and token is not None:
          prof.cons_show('')
          prof.cons_show('Logging into Chirpy')
          prof.cons_show('Birdy Twitter API Version used: ' + client.api_version)
@@ -142,17 +152,15 @@ def _print_initial_message():
          prof.cons_show('Please click the url below to give your blessings to profanity:')
          prof.cons_show(token['auth_url'])
 
-def _set_final_access_token(pin):
+def set_final_access_token(pin):
     global client
+    global streamClient
     global token
-    global OAUTH_VERIFIER
     global access_token
     global access_token_secret
-    
-    prof.log_debug(pin)
 
     if _user_entered_pin_code(pin):
-        prof.log_debug("User entered pin")
+        prof.log_debug("User entered pin" + pin)
         try:
             prof.log_debug("Try")
             client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
@@ -162,14 +170,14 @@ def _set_final_access_token(pin):
             prof.log_debug("Exception")
             prof.cons_show("Getting final access token error: " + e.error_code)
         else:
-            prof.log_debug("ELSE")
-            prof.log_debug("Didn't enter ping")
+            prof.log_debug("Token request successful, now saving..")
             access_token = token['oauth_token']
             access_token_secret = token['oauth_token_secret']
             client = UserClient(CONSUMER_KEY, CONSUMER_SECRET,
-                            access_token, access_token_secret)
+                                access_token, access_token_secret)
+            streamClient = StreamClient(CONSUMER_KEY, CONSUMER_SECRET,
+                                        access_token, access_token_secret)
             _save_token()
-            prof.log_debug("Saved token")
             prof.cons_show(" ")
             prof.cons_show("You have logged into twitter")
             prof.cons_show('Come ye, birds of different feathers, we chirp together')
@@ -190,6 +198,7 @@ def _save_token():
         file_object.write(access_token + '\n')
         file_object.write(access_token_secret)
         file_object.close()
+        prof.log_debug("Saved token")
 
 def _is_number(numberAsString):
     try:
@@ -211,42 +220,43 @@ def _quit_application():
 def help():
     prof.cons_show('')
     prof.cons_show('Chirpy (twitter plugin) commands below')
-    prof.cons_show('/twi-login - begin twitter login process')
-    prof.cons_show('/twi-pin - authorise app by entering pin code (e.g /twi-pin <enter pin code generated from url>)')
-    prof.cons_show('/tweet - chirp away (e.g /tweet "<your tweet>") ')
+    prof.cons_show('/twi login - begin twitter login process')
+    prof.cons_show('/twi pin - authorise app by entering pin code (e.g /twi pin <enter pin code generated from url>)')
+    prof.cons_show('/twi tweet - chirp away (e.g /twi tweet "<your tweet>") ')
+    prof.cons_show('/twi filter feed - chirp away (e.g /twi filter feed "<tweet with keyword>") ')
 
 #on home screen
 def prof_start_message():
         prof.cons_show('Hello welcome to Chirpy, the profanity twitter plugin :)')
         prof.cons_show('Setup Chirpy with the steps below (For new users only)')
-        prof.cons_show('1) Use /twi-login to start logging in, it will provide you a url')
+        prof.cons_show('1) Use /twi login to start logging in, it will provide you a url')
         prof.cons_show('2) Click on the url link provided and login with your twitter account in the browser')
-        prof.cons_show('3) Use /twi-pin to enter pin code provided by the url page in the browser')
+        prof.cons_show('3) Use /twi pin to enter pin code provided by the url page in the browser')
         prof.cons_show('NOTE: you only need to do step 1, 2 and 3 once, after which once you start again profanity, you can tweet straight away')
-        prof.cons_show('4) Use /tweet "<your tweet>" to tweet right now from profanity!')
-        prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twi-help')
+        prof.cons_show('4) Use /twi tweet "<your tweet>" to tweet right now from profanity!')
+        prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twi help')
 
 # register profanity commands
 def prof_init(version, status, account_name, fulljid):
-    prof.register_command("/twi-login", 0, 0, ["/twi-login"], "Login to your twitter account", [], [], authorize_app_by_user)
-    prof.register_command("/twi-pin",
+    prof.register_command("/twi login", 0, 0, ["/twi login"], "Login to your twitter account", [], [], authorize_app_by_user)
+    prof.register_command("/twi pin",
                           1, 1,
-                          ["/twi-pin"],
+                          ["/twi pin"],
                           "Login to your twitter account",
-                          [["/twi-pin ", "enter pin code generated from url"]],
+                          [["/twi pin ", "enter pin code generated from url"]],
                           [],
-                          _set_final_access_token)
-    prof.register_command("/twi-track-status",
+                          set_final_access_token)
+    prof.register_command("/twi filter feed",
                       1, 1,
-                      ["/twi-track-status"],
-                      "Add one at a time what keywords you want to track (you can add up to 400 words to track!)",
-                      [["/twi-pin ", "tell me which words you are interested in today"]],
+                      ["/twi filter feed"],
+                      "add a keyword or phrase you want to track (you can add up to 400 words to track!)",
+                      [["/twi filter feed", "tell me which words you are interested in today"]],
                       [],
                       set_tracked_statuses)
-    prof.register_timed(display_feed_in_new_window, 10)
-    prof.register_command("/tweet", 1, 1, ["/tweet"], "Chirp what your thinking!", [["/tweet", "your tweet"]], [], tweet)
-    prof.register_command("/twi-help", 0, 0, ["/twi-help"], "List all commands for chirpy", [], [], help)
-    prof.completer_add("/twi-pin", [ "<enter pin code generated from the webpage of the url>" ])
-    prof.completer_add("/tweet", [ "<your tweet here>" ])
-    prof.completer_add("/twi-track-status", [ "<enter the keyword to track here>" ])
+    prof.register_timed(display_feed_in_new_window, 30)
+    prof.register_command("/twi tweet", 1, 1, ["/twi tweet"], "Chirp what your thinking!", [["/tweet", "your tweet"]], [], tweet)
+    prof.register_command("/twi help", 0, 0, ["/twi help"], "List all commands for chirpy", [], [], help)
+    prof.completer_add("/twi pin", [ "<enter pin code generated from the webpage of the url>" ])
+    prof.completer_add("/twi tweet", [ "<your tweet here>" ])
+    prof.completer_add("/twi filter feed", [ "<enter the keyword to track here>" ])
     prof_start_message()
