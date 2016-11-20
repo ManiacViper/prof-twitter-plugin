@@ -220,43 +220,52 @@ def _quit_application():
 def help():
     prof.cons_show('')
     prof.cons_show('Chirpy (twitter plugin) commands below')
-    prof.cons_show('/twi login - begin twitter login process')
-    prof.cons_show('/twi pin - authorise app by entering pin code (e.g /twi pin <enter pin code generated from url>)')
-    prof.cons_show('/twi tweet - chirp away (e.g /twi tweet "<your tweet>") ')
-    prof.cons_show('/twi filter feed - chirp away (e.g /twi filter feed "<tweet with keyword>") ')
+    prof.cons_show('/twi-login - begin twitter login process')
+    prof.cons_show('/twi-pin - authorise app by entering pin code (e.g /twi-pin <enter pin code generated from url>)')
+    prof.cons_show('/tweet - chirp away (e.g /tweet "<your tweet>") ')
 
 #on home screen
 def prof_start_message():
         prof.cons_show('Hello welcome to Chirpy, the profanity twitter plugin :)')
         prof.cons_show('Setup Chirpy with the steps below (For new users only)')
-        prof.cons_show('1) Use /twi login to start logging in, it will provide you a url')
+        prof.cons_show('1) Use /twi-login to start logging in, it will provide you a url')
         prof.cons_show('2) Click on the url link provided and login with your twitter account in the browser')
-        prof.cons_show('3) Use /twi pin to enter pin code provided by the url page in the browser')
+        prof.cons_show('3) Use /twi-pin to enter pin code provided by the url page in the browser')
         prof.cons_show('NOTE: you only need to do step 1, 2 and 3 once, after which once you start again profanity, you can tweet straight away')
-        prof.cons_show('4) Use /twi tweet "<your tweet>" to tweet right now from profanity!')
-        prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twi help')
+        prof.cons_show('4) Use /tweet "<your tweet>" to tweet right now from profanity!')
+        prof.cons_show('CHIRPY HELP - All commands for Chirpy can be shown with /twi-help')
 
 # register profanity commands
 def prof_init(version, status, account_name, fulljid):
-    prof.register_command("/twi login", 0, 0, ["/twi login"], "Login to your twitter account", [], [], authorize_app_by_user)
-    prof.register_command("/twi pin",
+    synopsis = [
+        "/twi-login",
+        "/twi-pin <pin code>",
+        "/tweet <status>",
+        "/twi-track-status <keyword or phrase>"
+    ]
+    description = "tweet and/or display your twitter feed"
+    args = []
+    examples = []
+
+    prof.register_command("/twi-login", 0, 0, ["/twi-login"], "Login to your twitter account", [], [], authorize_app_by_user)
+    prof.register_command("/twi-pin",
                           1, 1,
-                          ["/twi pin"],
+                          ["/twi-pin"],
                           "Login to your twitter account",
-                          [["/twi pin ", "enter pin code generated from url"]],
+                          [["/twi-pin ", "enter pin code generated from url"]],
                           [],
                           set_final_access_token)
-    prof.register_command("/twi filter feed",
+    prof.register_command("/twi-track-status",
                       1, 1,
-                      ["/twi filter feed"],
-                      "add a keyword or phrase you want to track (you can add up to 400 words to track!)",
-                      [["/twi filter feed", "tell me which words you are interested in today"]],
+                      ["/twi-track-status"],
+                      "Add one at a time what keywords you want to track (you can add up to 400 words to track!)",
+                      [["/twi-pin ", "tell me which words you are interested in today"]],
                       [],
                       set_tracked_statuses)
-    prof.register_timed(display_feed_in_new_window, 30)
-    prof.register_command("/twi tweet", 1, 1, ["/twi tweet"], "Chirp what your thinking!", [["/tweet", "your tweet"]], [], tweet)
-    prof.register_command("/twi help", 0, 0, ["/twi help"], "List all commands for chirpy", [], [], help)
-    prof.completer_add("/twi pin", [ "<enter pin code generated from the webpage of the url>" ])
-    prof.completer_add("/twi tweet", [ "<your tweet here>" ])
-    prof.completer_add("/twi filter feed", [ "<enter the keyword to track here>" ])
+    prof.register_timed(display_feed_in_new_window, 10)
+    prof.register_command("/tweet", 1, 1, ["/tweet"], "Chirp what your thinking!", [["/tweet", "your tweet"]], [], tweet)
+    prof.register_command("/twi-help", 0, 0, ["/twi-help"], "List all commands for chirpy", [], [], help)
+    prof.completer_add("/twi-pin", [ "<enter pin code generated from the webpage of the url>" ])
+    prof.completer_add("/tweet", [ "<your tweet here>" ])
+    prof.completer_add("/twi-track-status", [ "<enter the keyword to track here>" ])
     prof_start_message()
